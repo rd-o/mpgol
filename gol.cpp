@@ -2,33 +2,17 @@
 #include <stdlib.h>
 #include <math.h>
 
-int levelDelay[] = {887, 820, 753, 686, 619, 552, 469, 368, 285, 184, 167, 
-	151, 134, 117, 100, 100, 84, 84, 67, 67, 50};
-int pointsForLine[] = {40, 100,	300, 1200};
-int level = 20;
-int lineCounter;
-int lineCounterForLevel;
-
 Uint32 pieceCnt = 0;
-//int tm[X_SIZE][Y_SIZE];
 
-#ifndef __ARDUINO_TETRIS__
+#ifndef ARDUINO
 Uint8 vgaxfb[X_BYTE_SIZE * Y_SIZE];
+#else
+#include <VGAX.h>
 #endif
+
 //only use 3 lines
 Uint8 vgax_sec_buf[X_BYTE_SIZE * 3];
 
-static int screenPosX = SCREEN_POS_X * SCREEN_FACTOR;
-static int screenPosY = SCREEN_POS_Y * SCREEN_FACTOR;
-
-int cnt_y  = 0;
-int cnt_x  = 5;
-int posMovingPieceX;
-int posMovingPieceY;
-int score;
-bool afterReset;
-
-const int FPS = 60;
 const int frameDelay = 1000 / FPS;
 
 void mainGameLoop(){
@@ -52,7 +36,6 @@ void mainGameLoop(){
 
 void initTetris()
 {
-	int i, j;
 	pieceCnt = getTicks();
 	if(initDisplay("Game of Life", 160 * 4, 144 * 4, false) == 1)
 	{
@@ -88,7 +71,7 @@ void initTetris()
   setPixel(6, 0, 3);
   setPixel(7, 0, 3);
   */
-  printf("vgaxfb[%i]: %i\n", 0, vgaxfb[0]);
+  //printf("vgaxfb[%i]: %i\n", 0, vgaxfb[0]);
 }
 
 void onLeftKey()
@@ -117,26 +100,6 @@ void handleEvents()
 	handlePlatformEvents(&onLeftKey, &onRightKey, &onUpKey, &onDownKey, &onSpaceKey);
 }
 
-/*
-int isPixelAlive(char x, char y, char x1, char y1) {
-  printf("isPixelAlive -->: (%i, %i)\n", x, y);
-  Uint8 xAdapted = toroidCalcX(x);
-  Uint8 yAdapted = toroidCalcY(y);
-
-  Uint16 arrayNumber = (int) xAdapted / 4 + yAdapted * X_BYTE_SIZE;
-
-  Uint8 twoBitPos = 6 - (xAdapted - (4 * ((int) xAdapted / 4))) * 2;
-
-  //printf("isPixelAlive, xAdapted, yAdapted, arrayNumber, twoBitPos (%i, %i, %i, %i)\n", xAdapted, yAdapted, arrayNumber, twoBitPos);
-
-  if(yAdapted == (Y_SIZE - 1)) {
-    return ((vgaxfb[arrayNumber] >> twoBitPos) & 0b11) == 3;
-  } else {
-    printf("\n isPixelAlive: vgax_sec_buf[%i]: %i\n", arrayNumber, vgax_sec_buf[arrayNumber] );
-    return ((vgax_sec_buf[(int) x1 / 4 + y1 * X_BYTE_SIZE] >> twoBitPos) & 0b11) == 3;
-  }
-}
-*/
 int toroidCalcX(char value) {
   if(value == -1) {
     return X_SIZE - 1;
@@ -146,25 +109,6 @@ int toroidCalcX(char value) {
     return value;
   }
 }
-
-int toroidCalcY(char value) {
-  if(value == -1) {
-    return Y_SIZE - 1;
-  } else if(value == Y_SIZE) {
-    return 0;
-  } else {
-    return value;
-  }
-}
-
-/*
-int isPixelAlive(char x, char y, char x1, char y1) {
-  Uint8 xAdapted = toroidCalcX(x);
-  Uint8 twoBitPos = 6 - (x - (4 * ((int) x / 4))) * 2;
-
-  return ((vgax_sec_buf[(int) xAdapted / 4 + y1 * X_BYTE_SIZE] >> twoBitPos) & 0b11) == 3;
-}
-*/
 
 int isPixelAlive(char x, char y1) {
   Uint8 xAdapted = toroidCalcX(x);
@@ -195,19 +139,22 @@ Uint8 getPixelSec(Uint8 x, Uint8 y) {
   return (vgax_sec_buf[arrayNumber] >> twoBitPos) & 0b11;
 }
 
+
+#ifndef ARDUINO
 void printVgaSecBuf() {
-  printf("-------------> \n");
+  //printf("-------------> \n");
   for(int j = 0; j < 3; j++) {
     for(int i = 0; i < X_BYTE_SIZE; i++) {
       if(getPixelSec(i, j) == 3) {
-        printf("#");
+        //printf("#");
       }else {
-        printf(" ");
+        //printf(" ");
       }
     }
-    printf("\n");
+    //printf("\n");
   }
 }
+#endif
 
 void firstBackupToSecondaryBuffer() {
   int y_tmp;
@@ -245,30 +192,34 @@ void nextGeneration() {
   Uint8 neighbors;
 
   firstBackupToSecondaryBuffer();
+#ifndef ARDUINO
   printVgaSecBuf();
+#endif
 
   for (char y = 0; y < Y_SIZE; y++) {
     for (char x = 0; x < X_SIZE; x++) {
       neighbors = getNeighbors(x, y);
 
-      printf("(%i, %i) ne: %i - ", x, y, neighbors);
+      //printf("(%i, %i) ne: %i - ", x, y, neighbors);
       
+      /*
       if(getPixel(x, y) == 3) {
         printf(" alive ");
       } else {
         printf(" death ");
       }
+      */
 
       if (isPixelAlive (x, 1))
       {
         // Pixel is alive; remains alive with 2 or 3 neighbors.
         if ((neighbors == 2) || (neighbors == 3)){
           setPixel(x, y, 3);
-          printf("- alive\n");
+          //printf("- alive\n");
         }
         else {
           setPixel(x, y, 0);
-          printf("- death\n");
+          //printf("- death\n");
         }
       }
       else
@@ -276,16 +227,18 @@ void nextGeneration() {
         // Cell is dead; new cell is born when it has exactly 3 neighbors.
         if (neighbors == 3) {
           setPixel(x, y, 3);
-          printf("- alive\n");
+          //printf("- alive\n");
         }
         else {
           setPixel(x, y, 0);
-          printf("- death\n");
+          //printf("- death\n");
         }
       }
     }
     backupToSecondaryBuffer(y + 1);
+#ifndef ARDUINO
     printVgaSecBuf();
+#endif
   }
 }
 
@@ -293,9 +246,10 @@ void update()
 {
   //scoring();
   Uint32 currentPieceCnt = getTicks();
-  if((currentPieceCnt - pieceCnt) > levelDelay[level])
+  //change speed here
+  if((currentPieceCnt - pieceCnt) > 500)
   {
-    printf("call next\n");
+    //printf("call next\n");
     nextGeneration();
     pieceCnt = currentPieceCnt;
   }

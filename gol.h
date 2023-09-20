@@ -1,21 +1,23 @@
-#ifndef TETRIS_H
-#define TETRIS_H
+#ifndef GOL_H
+#define GOL_H
 #include <stdbool.h>
 
-#ifdef __ARDUINO_TETRIS__
+#ifdef ARDUINO
 #include "arduino_display.h"
 #include "Arduino.h"
+
+typedef byte Uint8;
+typedef int Uint16;
 #endif
 
-#ifndef __ARDUINO_TETRIS__
+#ifndef ARDUINO
 #include "sdl_display.h"
 #endif
 
 Uint8 getPixel(Uint8 x, Uint8 y);
 void setPixel(Uint8 x, Uint8 y, Uint8 value);
-void setPixelP(Uint8 x, Uint8 y, Uint8 value, Uint8 *vgaxfbp);
 void backupToSecondaryBuffer(Uint8 y);
-//int isPixelAlive(char x, char y);
+void nextGeneration();
 
 void handleEvents();
 void update();
@@ -26,6 +28,4 @@ bool checkColision(int cnt_y_local);
 void initTetris();
 void mainGameLoop();
 
-extern Uint8 vgaxfb[X_BYTE_SIZE * Y_SIZE];
-extern Uint8 vgax_sec_buf[X_BYTE_SIZE * 3];
 #endif

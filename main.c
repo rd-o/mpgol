@@ -1,4 +1,4 @@
-#ifndef __ARDUINO_TETRIS__
+#ifndef ARDUINO
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif

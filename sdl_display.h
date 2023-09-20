@@ -1,4 +1,4 @@
-#ifndef __ARDUINO_TETRIS__
+#ifndef ARDUINO
 #ifndef SDL_DISPLAY_H
 #define SDL_DISPLAY_H
 

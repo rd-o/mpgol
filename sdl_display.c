@@ -1,4 +1,4 @@
-#ifndef __ARDUINO_TETRIS__
+#ifndef ARDUINO
 #include "sdl_display.h"
 
 bool isRunning = false;
