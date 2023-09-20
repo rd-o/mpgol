@@ -8,6 +8,7 @@ Uint32 pieceCnt = 0;
 Uint8 vgaxfb[X_BYTE_SIZE * Y_SIZE];
 #else
 #include <VGAX.h>
+VGAX vga;
 #endif
 
 //only use 3 lines
@@ -41,10 +42,14 @@ void initTetris()
 	{
 		return;
 	}
-
+  #ifdef ARDUINO
+  vga.begin();
+  vga.clear(0);
+  #else
   for(int i = 0; i < X_BYTE_SIZE * Y_SIZE; i++) {
     vgaxfb[i] = 0;
   }
+  #endif
 
   /*
   for(int j = 0; j < Y_SIZE; j++)
@@ -112,7 +117,7 @@ int toroidCalcX(char value) {
 
 int isPixelAlive(char x, char y1) {
   Uint8 xAdapted = toroidCalcX(x);
-  Uint8 twoBitPos = 6 - (x - (4 * ((int) x / 4))) * 2;
+  Uint8 twoBitPos = 6 - (x & 3) * 2;
 
   return ((vgax_sec_buf[(int) xAdapted / 4 + y1 * X_BYTE_SIZE] >> twoBitPos) & 0b11) == 3;
 }
@@ -167,24 +172,17 @@ void firstBackupToSecondaryBuffer() {
       }
       
       vgax_sec_buf[i + X_BYTE_SIZE * j] = vgaxfb[i + X_BYTE_SIZE * y_tmp];
-      
-      //printf("(%i, %i), y_tmp: %i, vgax_sec_buf[%i], vgaxfb[%i] = %i \n", 
-      //    i, j, y_tmp, i + X_BYTE_SIZE * j, i + X_BYTE_SIZE * y_tmp, vgaxfb[i + X_BYTE_SIZE * y_tmp]);
     }
 }
 
 void backupToSecondaryBuffer(Uint8 y) {
   for(int j = 0; j < 3; j++)
     for(int i = 0; i < X_BYTE_SIZE; i++) {
-
       if(j == 2) {
         vgax_sec_buf[i + X_BYTE_SIZE * j] = vgaxfb[i + X_BYTE_SIZE * (j - 1 + y)];
       } else {
         vgax_sec_buf[i + X_BYTE_SIZE * j] = vgax_sec_buf[i + X_BYTE_SIZE * (j + 1)];
       }
-
-      //printf("(%i, %i), vgax_sec_buf[%i], vgaxfb[%i] = %i \n", 
-      //    i, j, i + X_BYTE_SIZE * j, i + X_BYTE_SIZE * y_tmp, vgaxfb[i + X_BYTE_SIZE * y_tmp]);
     }
 }
 
@@ -200,26 +198,14 @@ void nextGeneration() {
     for (char x = 0; x < X_SIZE; x++) {
       neighbors = getNeighbors(x, y);
 
-      //printf("(%i, %i) ne: %i - ", x, y, neighbors);
-      
-      /*
-      if(getPixel(x, y) == 3) {
-        printf(" alive ");
-      } else {
-        printf(" death ");
-      }
-      */
-
       if (isPixelAlive (x, 1))
       {
         // Pixel is alive; remains alive with 2 or 3 neighbors.
         if ((neighbors == 2) || (neighbors == 3)){
-          setPixel(x, y, 3);
-          //printf("- alive\n");
+          //setPixel(x, y, 3);
         }
         else {
           setPixel(x, y, 0);
-          //printf("- death\n");
         }
       }
       else
@@ -227,11 +213,9 @@ void nextGeneration() {
         // Cell is dead; new cell is born when it has exactly 3 neighbors.
         if (neighbors == 3) {
           setPixel(x, y, 3);
-          //printf("- alive\n");
         }
         else {
-          setPixel(x, y, 0);
-          //printf("- death\n");
+          //setPixel(x, y, 0);
         }
       }
     }
@@ -293,7 +277,8 @@ Uint8 getPixel(Uint8 x, Uint8 y) {
   //printf("(%i, %i)", x, y);
   //printf("vgaxfb[%i]: %i", arrayNumber, vgaxfb[arrayNumber]);
 
-  Uint8 twoBitPos = 6 - (x - (4 * ((int) x / 4))) * 2;
+  //Uint8 twoBitPos = 6 - (x - (4 * ((int) x / 4))) * 2;
+  Uint8 twoBitPos = 6 - (x & 3) * 2;
 
   //printf("twoBitPos: %i ", twoBitPos);
   //int res = (vgaxfb[arrayNumber] >> twoBitPos) & 0b11;
@@ -319,7 +304,8 @@ void setPixel(Uint8 x, Uint8 y, Uint8 value) {
 void setPixel(Uint8 x, Uint8 y, Uint8 value) {
   Uint16 arrayNumber = (int) x / 4 + y * X_BYTE_SIZE ;
   //Uint8 twoBitPos = (x - (4 * ((int) x / 4))) * 2;
-  Uint8 twoBitPos = getTwoBitPos(x);
+  Uint8 twoBitPos = 6 - (x & 3) * 2;
+  //Uint8 twoBitPos = getTwoBitPos(x);
   vgaxfb[arrayNumber] &= ~(0b11 << twoBitPos);
   vgaxfb[arrayNumber] |= value << twoBitPos;
 }

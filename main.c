@@ -21,15 +21,6 @@ int main(int argc, char *argv[])
 	#endif
 
 	clean();
-  /*
-  vgaxfb[0] = 128;
-  vgaxfb[X_BYTE_SIZE] = 64;
-  vgaxfb[X_BYTE_SIZE * (Y_SIZE - 1)] = 64;
-  backupToSecondaryBuffer(1);
-  for(int i = 0; i < X_BYTE_SIZE * 3; i++) {
-    printf("[%i] = %i\n", i, vgax_sec_buf[i]);
-  }
-  */
 	return 0;
 }
 #endif
