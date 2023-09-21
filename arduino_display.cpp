@@ -8,8 +8,6 @@
 // pin 3 - LCD reset (RST)
 //Adafruit_PCD8544 display = Adafruit_PCD8544(5, 4, 3);
 
-int pixelSize = SCREEN_FACTOR * PIXEL_ORIGINAL_SIZE;
-
 bool loadMedia()
 {
 	return false;
@@ -26,6 +24,7 @@ int initDisplay(const char* title, int width, int height, bool fullscreen)
 
 void delayMs(Uint32 ms)
 {
+  delay(ms);
 }
 
 void playEScore()

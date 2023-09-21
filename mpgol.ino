@@ -9,7 +9,5 @@ void setup() {
 }
 
 void loop() {
-  //mainGameLoop();
   nextGeneration();
-  //delay(100);
 }
